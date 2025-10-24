@@ -19,6 +19,11 @@ import { type Response } from 'express';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { Profile } from 'passport-google-oauth20';
 
+type TokenReturnType = {
+  accessToken: string;
+  refreshToken: string;
+};
+
 @Injectable()
 export class AuthService {
   constructor(
@@ -29,12 +34,13 @@ export class AuthService {
     private readonly refreshTokenRepository: Repository<RefreshToken>,
   ) {}
 
-  async register(dto: RegisterDto) {
+  async register(dto: RegisterDto): Promise<TokenReturnType> {
     const user = await this.userService.create(dto);
-    return user;
+
+    return this.generateTokens(user);
   }
 
-  async login(dto: LoginDto) {
+  async login(dto: LoginDto): Promise<TokenReturnType> {
     const user = await this.userService.findByEmail(dto.email);
 
     if (!user) {
@@ -53,7 +59,11 @@ export class AuthService {
     return this.generateTokens(user);
   }
 
-  async refresh(refreshToken: string | null, id: string, res: Response) {
+  async refresh(
+    refreshToken: string | null,
+    id: string,
+    res: Response,
+  ): Promise<TokenReturnType> {
     if (!refreshToken) {
       throw new UnauthorizedException('Refresh Token not found');
     }
@@ -83,7 +93,9 @@ export class AuthService {
     return this.generateTokens(refreshTokenInDB.user);
   }
 
-  async validateGoogleUser(profile: Profile) {
+  async validateGoogleUser(
+    profile: Profile,
+  ): Promise<{ user: User } & TokenReturnType> {
     const emails = profile.emails;
     if (!emails) {
       throw new InternalServerErrorException('No email on google user');
@@ -104,7 +116,7 @@ export class AuthService {
     return { user, ...tokens };
   }
 
-  private async generateTokens(user: User) {
+  private async generateTokens(user: User): Promise<TokenReturnType> {
     const accessToken = this.jwtService.sign({
       sub: user.id,
       name: user.name,
@@ -133,7 +145,7 @@ export class AuthService {
   }
 
   @Cron(CronExpression.EVERY_30_MINUTES)
-  async clearExpiredRefreshTokens() {
+  async clearExpiredRefreshTokens(): Promise<void> {
     const tokens = await this.refreshTokenRepository.find({
       where: {
         expiresAt: LessThan(new Date()),
