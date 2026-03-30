@@ -66,12 +66,7 @@ billen/
 - Session TTL should be explicitly set — never rely on defaults
 - Google OAuth is post-MVP — standard email/password auth only for now
 - Forgot/reset password is post-MVP — implement after all core features are shipped
-- Password requirements (enforced via `@Matches()` on `CreateUserDto`):
-  - 8 characters minimum
-  - At least one uppercase letter
-  - At least one lowercase letter
-  - At least one digit
-  - At least one symbol
+- Password requirements enforced via `@IsStrongPassword()` on `CreateUserDto` — no custom regex needed
 
 ### Database
 
@@ -102,8 +97,8 @@ billen/
 
 ### User DTO
 
-- `GET /me` returns a flat user object — no address: `{ id, name, email, createdAt, updatedAt }`
-- Address can be added later via a dedicated `GET /me/address` route if needed
+- `GET /me` returns a flat user object — no address, no timestamps: `{ id, name, email }`
+- Timestamps can be added back to the DTO if a use case arises
 - Never expose `password`, `google_id`, or session internals in any response DTO
 
 ### Dev Environment
