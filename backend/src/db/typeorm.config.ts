@@ -14,7 +14,7 @@ export function getTypeOrmConfig(): DataSourceOptions {
 
   return {
     type: 'sqlite',
-    database: process.env.DB_NAME || 'db.sqlite',
+    database: 'db.sqlite',
     synchronize: true,
   };
 }
