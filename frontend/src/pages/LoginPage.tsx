@@ -1,25 +1,34 @@
 import { useState } from 'react';
-import type { FormEvent } from 'react';
+import { z } from 'zod';
 import { Link, useNavigate } from 'react-router-dom';
 import { login } from '../services/auth.service';
+import { loginSchema } from '../schemas/auth.schemas';
 import styles from './auth.module.css';
 
 export default function LoginPage() {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Partial<Record<string, string[]>>>({});
+  const [serverError, setServerError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    setError(null);
+  async function handleSubmit() {
+    setFieldErrors({});
+    setServerError(null);
+
+    const result = loginSchema.safeParse({ email, password });
+    if (!result.success) {
+      setFieldErrors(z.flattenError(result.error).fieldErrors);
+      return;
+    }
+
     setLoading(true);
     try {
       await login(email, password);
       navigate('/');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Login failed');
+      setServerError(err instanceof Error ? err.message : 'Login failed');
     } finally {
       setLoading(false);
     }
@@ -36,8 +45,15 @@ export default function LoginPage() {
         <h1 className={styles.title}>Welcome back</h1>
         <p className={styles.subtitle}>Sign in to your account</p>
 
-        <form className={styles.form} onSubmit={handleSubmit} noValidate>
-          {error && <div className={styles.error}>{error}</div>}
+        <form
+          className={styles.form}
+          onSubmit={(e) => {
+            e.preventDefault();
+            void handleSubmit();
+          }}
+          noValidate
+        >
+          {serverError && <div className={styles.error}>{serverError}</div>}
 
           <div className={styles.field}>
             <label htmlFor="email" className={styles.label}>
@@ -46,12 +62,14 @@ export default function LoginPage() {
             <input
               id="email"
               type="email"
-              required
               autoComplete="email"
               className={styles.input}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
             />
+            {fieldErrors.email?.[0] && (
+              <span className={styles.fieldError}>{fieldErrors.email[0]}</span>
+            )}
           </div>
 
           <div className={styles.field}>
@@ -61,12 +79,14 @@ export default function LoginPage() {
             <input
               id="password"
               type="password"
-              required
               autoComplete="current-password"
               className={styles.input}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
+            {fieldErrors.password?.[0] && (
+              <span className={styles.fieldError}>{fieldErrors.password[0]}</span>
+            )}
           </div>
 
           <button type="submit" className={styles.button} disabled={loading}>
