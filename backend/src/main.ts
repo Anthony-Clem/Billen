@@ -7,13 +7,13 @@ import { NestExpressApplication } from '@nestjs/platform-express';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
-  app.set('trustProxy', 1);
   app.setGlobalPrefix('/api/v1');
+  app.set('trust proxy', 1);
+  app.use(session(await createSessionOptions()));
   app.enableCors({
     origin: [process.env.FRONTEND_URL || 'http://localhost:5173'],
     credentials: true,
   });
-  app.use(session(await createSessionOptions()));
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
