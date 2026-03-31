@@ -61,9 +61,16 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   logout(@Session() session: DestroyableSession): Promise<ApiResponse<null>> {
     return new Promise((resolve, reject) => {
-      session.destroy((err: unknown) => {
-        if (err) return reject(err);
-        resolve({ data: null, message: 'Logged out successfully', statusCode: HttpStatus.OK });
+      session.destroy((err) => {
+        if (err)
+          return reject(
+            err instanceof Error ? err : new Error(JSON.stringify(err)),
+          );
+        resolve({
+          data: null,
+          message: 'Logged out successfully',
+          statusCode: HttpStatus.OK,
+        });
       });
     });
   }
