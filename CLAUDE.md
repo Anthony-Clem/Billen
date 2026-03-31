@@ -16,11 +16,14 @@ billen/
 ├── .gitignore
 ├── backend/          # NestJS + TypeORM + PostgreSQL
 │   ├── src/
-│   │   ├── auth/
-│   │   ├── clients/
-│   │   ├── invoices/
-│   │   ├── analytics/
-│   │   └── common/
+│   │   ├── common/
+│   │   ├── modules/
+│   │   │   ├── auth/
+│   │   │   ├── clients/
+│   │   │   ├── invoices/
+│   │   │   └── analytics/
+│   │   ├── utils/
+│   │   └── db/
 │   ├── test/
 │   └── package.json
 └── frontend/         # React + Vite + TypeScript
@@ -126,6 +129,10 @@ billen/
 - Components live in `src/components/`, pages in `src/pages/`
 - API calls are centralized in `src/services/` — no `fetch`/`axios` calls inside components
 - Use custom hooks for all shared stateful logic
+- All fetch calls must include `credentials: 'include'` — required for session cookies, never remove
+- NestJS errors return both string and string-array formats — always normalize both in service calls
+- `useAuth()` is the canonical hook for current user state — never duplicate this logic elsewhere
+- Vite proxy forwards `/api` → `http://localhost:8000` in dev — all service calls must use `/api` prefix
 
 ---
 
