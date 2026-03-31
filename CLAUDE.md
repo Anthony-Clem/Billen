@@ -16,11 +16,14 @@ billen/
 ├── .gitignore
 ├── backend/          # NestJS + TypeORM + PostgreSQL
 │   ├── src/
-│   │   ├── auth/
-│   │   ├── clients/
-│   │   ├── invoices/
-│   │   ├── analytics/
-│   │   └── common/
+│   │   ├── common/
+│   │   ├── modules/
+│   │   │   ├── auth/
+│   │   │   ├── clients/
+│   │   │   ├── invoices/
+│   │   │   └── analytics/
+│   │   ├── utils/
+│   │   └── db/
 │   ├── test/
 │   └── package.json
 └── frontend/         # React + Vite + TypeScript
@@ -107,6 +110,22 @@ billen/
 - Dev Redis is in-memory only — sessions reset on every server restart, this is expected
 - No `.env` required for local dev — the app is pre-configured to run out of the box
 - Prod requires `REDIS_URL` (e.g. Upstash) — document in `.env.example`
+
+### Guards
+
+- All guards live in `src/common/guards/`
+- Use `SessionGuard` to protect all authenticated routes — applied via `@UseGuards(SessionGuard)`
+- Never check session inline in a controller
+
+### Serialization
+
+- Always use `plainToInstance(UserDto, ...)` to serialize user responses — no manual object mapping
+- This ensures `password` and other excluded fields are never exposed in any response
+- `ApiResponse<T>` is the shared response wrapper — lives in `src/common/types/api-response.ts`
+- All modules (auth, clients, invoices, analytics) must import `ApiResponse` from `src/common/`
+
+### Frontend
+
 - Components live in `src/components/`, pages in `src/pages/`
 - API calls are centralized in `src/services/` — no `fetch`/`axios` calls inside components
 - Use custom hooks for all shared stateful logic
