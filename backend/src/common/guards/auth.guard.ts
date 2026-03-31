@@ -8,7 +8,7 @@ import {
 import { Request } from 'express';
 
 @Injectable()
-export class AuthGuard implements CanActivate {
+export class SessionGuard implements CanActivate {
   constructor(private readonly userService: UserService) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
