@@ -16,11 +16,14 @@ billen/
 ├── .gitignore
 ├── backend/          # NestJS + TypeORM + PostgreSQL
 │   ├── src/
-│   │   ├── auth/
-│   │   ├── clients/
-│   │   ├── invoices/
-│   │   ├── analytics/
-│   │   └── common/
+│   │   ├── common/
+│   │   ├── modules/
+│   │   │   ├── auth/
+│   │   │   ├── clients/
+│   │   │   ├── invoices/
+│   │   │   └── analytics/
+│   │   ├── utils/
+│   │   └── db/
 │   ├── test/
 │   └── package.json
 └── frontend/         # React + Vite + TypeScript
@@ -118,6 +121,8 @@ billen/
 
 - Always use `plainToInstance(UserDto, ...)` to serialize user responses — no manual object mapping
 - This ensures `password` and other excluded fields are never exposed in any response
+- `ApiResponse<T>` is the shared response wrapper — lives in `src/common/types/api-response.ts`
+- All modules (auth, clients, invoices, analytics) must import `ApiResponse` from `src/common/`
 
 ### Frontend
 
