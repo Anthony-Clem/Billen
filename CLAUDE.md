@@ -110,6 +110,7 @@ billen/
 - Dev Redis is in-memory only — sessions reset on every server restart, this is expected
 - No `.env` required for local dev — the app is pre-configured to run out of the box
 - Prod requires `REDIS_URL` (e.g. Upstash) — document in `.env.example`
+- Prod requires `DATABASE_URL` (Neon PostgreSQL) — document in `.env.example`
 
 ### Guards
 
@@ -133,6 +134,15 @@ billen/
 - NestJS errors return both string and string-array formats — always normalize both in service calls
 - `useAuth()` is the canonical hook for current user state — never duplicate this logic elsewhere
 - Vite proxy forwards `/api` → `http://localhost:8000` in dev — all service calls must use `/api` prefix
+
+### Forms & Validation
+
+- Use Zod for all frontend form validation — no form libraries
+- Zod schemas live in `src/schemas/` — one file per domain (e.g. `auth.schemas.ts`)
+- Use `z.flattenError(result.error).fieldErrors` for field-level errors — `error.flatten()` is deprecated in Zod 4
+- Display field-level errors inline under each input — never as a single top-level blob
+- Backend errors (e.g. "email already in use") surface as a single top-level message only
+- React 19: `handleSubmit` must not accept an event parameter — use inline arrow in `onSubmit`: `(e) => { e.preventDefault(); void handleSubmit(); }` — `e` type is inferred from JSX, no import needed
 
 ---
 
@@ -183,6 +193,7 @@ reference/
 - Never commit `.env` files — use `.env.example` to document required vars
 - Never use `synchronize: true` in TypeORM config outside of local dev
 - Background jobs (CRON) must be tested in isolation before deploying
+- **Make the minimum changes necessary to complete the task — do not add features, files, or abstractions beyond what is explicitly requested**
 
 ---
 
