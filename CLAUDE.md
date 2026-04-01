@@ -159,6 +159,9 @@ billen/
 - Invalidate `user:<userId>` on logout — capture userId before destroying session
 - Groundwork for caching clients and invoices in later weeks
 - Prefer cache-aside pattern: check cache first, fall back to DB, write to cache
+
+### Frontend
+
 - Components live in `src/components/`, pages in `src/pages/`
 - API calls are centralized in `src/services/` — no `fetch`/`axios` calls inside components
 - Use custom hooks for all shared stateful logic
@@ -166,6 +169,10 @@ billen/
 - NestJS errors return both string and string-array formats — always normalize both in service calls
 - `useAuth()` is the canonical hook for current user state — never duplicate this logic elsewhere
 - Vite proxy forwards `/api` → `http://localhost:8000` in dev — all service calls must use `/api` prefix
+- `AppLayout` is the authenticated shell — all protected pages must render inside it
+- All services follow the `request()` fetch wrapper pattern established in `auth.service.ts` — never write raw fetch calls in a new service
+- `/` redirects to `/clients` — default authenticated landing page
+- `/onboard` is a public route — no `ProtectedRoute` wrapper
 
 ### Forms & Validation
 
