@@ -7,19 +7,19 @@ import {
 } from 'typeorm';
 
 class Address {
-  @Column({ name: 'address_line1', nullable: true, type: 'text' })
+  @Column({ nullable: true, type: 'text' })
   line1!: string | null;
 
-  @Column({ name: 'address_line2', nullable: true, type: 'text' })
+  @Column({ nullable: true, type: 'text' })
   line2?: string | null;
 
-  @Column({ name: 'address_city', nullable: true, type: 'text' })
+  @Column({ nullable: true, type: 'text' })
   city!: string | null;
 
-  @Column({ name: 'address_state', nullable: true, type: 'text' })
+  @Column({ nullable: true, type: 'text' })
   state!: string | null;
 
-  @Column({ name: 'address_zip', nullable: true, type: 'text' })
+  @Column({ nullable: true, type: 'text' })
   zip!: string | null;
 }
 
