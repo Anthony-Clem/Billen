@@ -71,7 +71,9 @@
   font-weight: 500;
   cursor: pointer;
   font-family: inherit;
-  transition: background 0.15s, border-color 0.15s;
+  transition:
+    background 0.15s,
+    border-color 0.15s;
   white-space: nowrap;
 }
 

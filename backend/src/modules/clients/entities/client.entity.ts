@@ -47,7 +47,7 @@ export class Client {
   @Column({ nullable: true, type: 'text' })
   phone!: string | null;
 
-  @Column(() => Address)
+  @Column(() => Address, { prefix: false })
   address?: Address;
 
   @CreateDateColumn({ name: 'created_at' })
