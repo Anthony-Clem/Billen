@@ -8,17 +8,17 @@ import {
   Session,
   UseGuards,
 } from '@nestjs/common';
+import { plainToInstance } from 'class-transformer';
+import { type SessionData } from 'express-session';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dtos/register.dto';
-import { type SessionData } from 'express-session';
 import { LoginDto } from './dtos/login.dto';
 import { SessionGuard } from '@/common/guards/auth.guard';
 import { CurrentUser } from '@/common/decorators/current-user.decorator';
 import { User } from '../user/entities/user.entity';
 import { UserDto } from '../user/dtos/user.dto';
-import { plainToInstance } from 'class-transformer';
-
-type ApiResponse<T> = { data: T; message: string; statusCode: number };
+import { RedisService } from '@/common/redis/redis.service';
+import type { ApiResponse } from '@/common/types/api-response';
 
 interface DestroyableSession extends SessionData {
   destroy(callback: (err: unknown) => void): void;
@@ -26,7 +26,10 @@ interface DestroyableSession extends SessionData {
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly redisService: RedisService,
+  ) {}
 
   @Post('register')
   async register(
@@ -59,20 +62,27 @@ export class AuthController {
 
   @Post('logout')
   @HttpCode(HttpStatus.OK)
-  logout(@Session() session: DestroyableSession): Promise<ApiResponse<null>> {
-    return new Promise((resolve, reject) => {
+  async logout(
+    @Session() session: DestroyableSession,
+  ): Promise<ApiResponse<null>> {
+    const userId = session.userId;
+    await new Promise<void>((resolve, reject) => {
       session.destroy((err) => {
         if (err)
           return reject(
             err instanceof Error ? err : new Error(JSON.stringify(err)),
           );
-        resolve({
-          data: null,
-          message: 'Logged out successfully',
-          statusCode: HttpStatus.OK,
-        });
+        resolve();
       });
     });
+    if (userId) {
+      await this.redisService.del(`user:${userId}`);
+    }
+    return {
+      data: null,
+      message: 'Logged out successfully',
+      statusCode: HttpStatus.OK,
+    };
   }
 
   @Get('me')
