@@ -1,26 +1,17 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { EmailService } from '@/common/email/email.service';
+import { RedisService } from '@/common/redis/redis.service';
+import { InvitePayload } from '@/common/types/invite-payload';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
 import { randomBytes } from 'crypto';
-import { Client } from './entities/client.entity';
+import { Repository } from 'typeorm';
 import { CreateClientDto } from './dtos/create-client.dto';
-import { UpdateClientDto } from './dtos/update-client.dto';
 import { InviteDto } from './dtos/invite.dto';
 import { OnboardDto } from './dtos/onboard.dto';
-import { RedisService } from '@/common/redis/redis.service';
-import { EmailService } from '@/common/email/email.service';
+import { UpdateClientDto } from './dtos/update-client.dto';
+import { Client } from './entities/client.entity';
 
 const INVITE_TTL_SECONDS = 48 * 60 * 60;
-
-interface InvitePayload {
-  userId: string;
-  clientEmail: string;
-  expiresAt: number;
-}
 
 function buildAddress(dto: {
   addressLine1?: string;
@@ -108,23 +99,13 @@ export class ClientService {
       INVITE_TTL_SECONDS,
     );
 
-    const frontendUrl =
-      process.env.FRONTEND_URL ?? 'http://localhost:5173';
+    const frontendUrl = process.env.FRONTEND_URL ?? 'http://localhost:5173';
     const onboardingUrl = `${frontendUrl}/onboard?token=${token}&expires=${expiresAt}`;
 
     await this.emailService.sendOnboardingInvite(email, onboardingUrl);
   }
 
-  async onboard(dto: OnboardDto): Promise<Client> {
-    const raw = await this.redisService.get(`invite:${dto.token}`);
-    if (!raw) throw new BadRequestException('Invalid or expired invite token');
-
-    const payload = JSON.parse(raw) as InvitePayload;
-    if (Date.now() > payload.expiresAt) {
-      await this.redisService.del(`invite:${dto.token}`);
-      throw new BadRequestException('Invite token has expired');
-    }
-
+  async onboard(dto: OnboardDto, payload: InvitePayload): Promise<Client> {
     const client = this.repository.create({
       userId: payload.userId,
       email: payload.clientEmail,
