@@ -110,6 +110,9 @@ billen/
 - Dev Redis is in-memory only — sessions reset on every server restart, this is expected
 - No `.env` required for local dev — the app is pre-configured to run out of the box
 - Prod requires `REDIS_URL` (e.g. Upstash) — document in `.env.example`
+- Prod requires `DATABASE_URL` (Neon PostgreSQL) — document in `.env.example`
+- Prod requires `RESEND_API_KEY` — document in `.env.example`
+- Prod requires `FRONTEND_URL` — used to build onboarding links, document in `.env.example`
 
 ### Guards
 
@@ -124,8 +127,25 @@ billen/
 - `ApiResponse<T>` is the shared response wrapper — lives in `src/common/types/api-response.ts`
 - All modules (auth, clients, invoices, analytics) must import `ApiResponse` from `src/common/`
 
-### Frontend
+### Client Onboarding Flow
 
+- User inputs client email in a dashboard dialog → backend generates a tokenized invite
+- Token stored in Redis with 48 hour TTL — auto-deletes on expiry, no cron job needed
+- Token payload (in Redis): `{ userId, clientEmail, expiresAt }`
+- Onboarding URL format: `/onboard?token=<token>&expires=<timestamp>` — expiry in URL for frontend display
+- Email copy must mention the 48 hour expiry window (sent via Resend)
+- Frontend checks URL expiry client-side to show expired state without a backend call
+- Backend validates token exists in Redis and is not expired on form submission
+- Client record is only created on successful form submission — never before
+- On submit: create client → delete token from Redis
+- Client form: email (pre-filled, non-editable), name, address
+
+### Caching
+
+- Cache current user in Redis after `GET /auth/me` — keyed by userId
+- Invalidate cache on logout
+- Groundwork for caching clients and invoices in later weeks
+- Prefer cache-aside pattern: check cache first, fall back to DB, write to cache
 - Components live in `src/components/`, pages in `src/pages/`
 - API calls are centralized in `src/services/` — no `fetch`/`axios` calls inside components
 - Use custom hooks for all shared stateful logic
@@ -133,6 +153,15 @@ billen/
 - NestJS errors return both string and string-array formats — always normalize both in service calls
 - `useAuth()` is the canonical hook for current user state — never duplicate this logic elsewhere
 - Vite proxy forwards `/api` → `http://localhost:8000` in dev — all service calls must use `/api` prefix
+
+### Forms & Validation
+
+- Use Zod for all frontend form validation — no form libraries
+- Zod schemas live in `src/schemas/` — one file per domain (e.g. `auth.schemas.ts`)
+- Use `z.flattenError(result.error).fieldErrors` for field-level errors — `error.flatten()` is deprecated in Zod 4
+- Display field-level errors inline under each input — never as a single top-level blob
+- Backend errors (e.g. "email already in use") surface as a single top-level message only
+- React 19: `handleSubmit` must not accept an event parameter — use inline arrow in `onSubmit`: `(e) => { e.preventDefault(); void handleSubmit(); }` — `e` type is inferred from JSX, no import needed
 
 ---
 
@@ -183,6 +212,7 @@ reference/
 - Never commit `.env` files — use `.env.example` to document required vars
 - Never use `synchronize: true` in TypeORM config outside of local dev
 - Background jobs (CRON) must be tested in isolation before deploying
+- **Make the minimum changes necessary to complete the task — do not add features, files, or abstractions beyond what is explicitly requested**
 
 ---
 
@@ -191,6 +221,6 @@ reference/
 - Google OAuth (quality of life — standard auth is the priority)
 - Forgot/reset password flow (requires Resend + reset token logic)
 - Stripe payments + webhook handling
-- WebSocket notifications (client onboarded, invoice paid)
+- WebSocket notifications (client onboarded, invoice paid) — post-MVP, good candidate for onboarding completion notification
 - AI late-payment prediction model (Python + scikit-learn)
 - Monthly report generation
