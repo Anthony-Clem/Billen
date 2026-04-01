@@ -4,7 +4,8 @@ import { Resend } from 'resend';
 @Injectable()
 export class EmailService {
   private readonly resend: Resend | null;
-  private readonly from = process.env.RESEND_FROM ?? 'Billen <onboarding@billen.app>';
+  private readonly from =
+    process.env.RESEND_FROM ?? 'Billen <onboarding@billen.app>';
 
   constructor() {
     const apiKey = process.env.RESEND_API_KEY;
@@ -13,7 +14,9 @@ export class EmailService {
 
   async sendOnboardingInvite(to: string, onboardingUrl: string): Promise<void> {
     if (!this.resend) {
-      Logger.warn(`RESEND_API_KEY not set. Onboarding email not sent to ${to}.`);
+      Logger.warn(
+        `RESEND_API_KEY not set. Onboarding email not sent to ${to}.`,
+      );
       Logger.log(`Onboarding URL (dev): ${onboardingUrl}`);
       return;
     }

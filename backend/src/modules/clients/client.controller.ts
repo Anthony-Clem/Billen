@@ -21,6 +21,9 @@ import { SessionGuard } from '@/common/guards/auth.guard';
 import { CurrentUser } from '@/common/decorators/current-user.decorator';
 import { User } from '../user/entities/user.entity';
 import type { ApiResponse } from '@/common/types/api-response';
+import { TokenGuard } from '@/common/guards/token.guard';
+import { InvitePayload } from '@/common/decorators/invite-payload.decorator';
+import type { InvitePayload as InvitePayloadType } from '@/common/types/invite-payload';
 
 @Controller('clients')
 export class ClientController {
@@ -28,9 +31,7 @@ export class ClientController {
 
   @Get()
   @UseGuards(SessionGuard)
-  async findAll(
-    @CurrentUser() user: User,
-  ): Promise<ApiResponse<ClientDto[]>> {
+  async findAll(@CurrentUser() user: User): Promise<ApiResponse<ClientDto[]>> {
     const clients = await this.clientService.findAll(user.id);
     return {
       data: plainToInstance(ClientDto, clients, {
@@ -121,9 +122,13 @@ export class ClientController {
   }
 
   @Post('onboard')
+  @UseGuards(TokenGuard)
   @HttpCode(HttpStatus.CREATED)
-  async onboard(@Body() dto: OnboardDto): Promise<ApiResponse<ClientDto>> {
-    const client = await this.clientService.onboard(dto);
+  async onboard(
+    @Body() dto: OnboardDto,
+    @InvitePayload() payload: InvitePayloadType,
+  ): Promise<ApiResponse<ClientDto>> {
+    const client = await this.clientService.onboard(dto, payload);
     return {
       data: plainToInstance(ClientDto, client, {
         excludeExtraneousValues: true,
