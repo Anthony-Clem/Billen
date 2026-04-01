@@ -76,6 +76,9 @@ billen/
 - **Always use TypeORM repositories** — never write raw SQL
 - All DB interactions go through the service layer, never directly in controllers
 - Migrations required for all schema changes — no `synchronize: true` in production
+- Migration naming convention: `<timestamp>-<FeatureName>Migration.ts` (e.g. `1743465600000-ClientsMigration.ts`)
+- Embedded address columns follow TypeORM's generated naming: `addressAddress_line1`, `addressAddress_line2`, etc.
+- All FK relations must use `ON DELETE CASCADE`
 
 ### API Design
 
@@ -131,7 +134,8 @@ billen/
 
 - User inputs client email in a dashboard dialog → backend generates a tokenized invite
 - Token stored in Redis with 48 hour TTL — auto-deletes on expiry, no cron job needed
-- Token payload (in Redis): `{ userId, clientEmail, expiresAt }`
+- Token key format: `invite:<token>` — payload: `{ userId, clientEmail, expiresAt }`
+- User cache key format: `user:<userId>` — 24hr TTL
 - Onboarding URL format: `/onboard?token=<token>&expires=<timestamp>` — expiry in URL for frontend display
 - Email copy must mention the 48 hour expiry window (sent via Resend)
 - Frontend checks URL expiry client-side to show expired state without a backend call
@@ -139,11 +143,20 @@ billen/
 - Client record is only created on successful form submission — never before
 - On submit: create client → delete token from Redis
 - Client form: email (pre-filled, non-editable), name, address
+- Token is a 64-char hex string
+
+### Modules & Wiring
+
+- `RedisModule` and `EmailModule` are `@Global()` — import once in `AppModule`, never in individual modules
+- `UserModule` must export `UserService` — consumed by `AuthModule` and `ClientModule`
+- All feature modules must provide `SessionGuard` locally for DI
+- `AppModule` is the single place to register global modules
 
 ### Caching
 
-- Cache current user in Redis after `GET /auth/me` — keyed by userId
-- Invalidate cache on logout
+- Cache current user in Redis after `GET /auth/me` — keyed as `user:<userId>` with 24hr TTL
+- Cache-aside lives in `SessionGuard` — check cache → fall back to DB → write to cache
+- Invalidate `user:<userId>` on logout — capture userId before destroying session
 - Groundwork for caching clients and invoices in later weeks
 - Prefer cache-aside pattern: check cache first, fall back to DB, write to cache
 - Components live in `src/components/`, pages in `src/pages/`
