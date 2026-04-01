@@ -7,19 +7,19 @@ import {
 } from 'typeorm';
 
 class Address {
-  @Column({ nullable: true, type: 'text' })
+  @Column({ name: 'address_line1', nullable: true, type: 'text' })
   line1!: string | null;
 
-  @Column({ nullable: true, type: 'text' })
+  @Column({ name: 'address_line2', nullable: true, type: 'text' })
   line2?: string | null;
 
-  @Column({ nullable: true, type: 'text' })
+  @Column({ name: 'address_city', nullable: true, type: 'text' })
   city!: string | null;
 
-  @Column({ nullable: true, type: 'text' })
+  @Column({ name: 'address_state', nullable: true, type: 'text' })
   state!: string | null;
 
-  @Column({ nullable: true, type: 'text' })
+  @Column({ name: 'address_zip', nullable: true, type: 'text' })
   zip!: string | null;
 }
 
@@ -42,7 +42,7 @@ export class User {
   @Column({ name: 'google_id', nullable: true, type: 'text' })
   googleId!: string | null;
 
-  @Column(() => Address)
+  @Column(() => Address, { prefix: false })
   address?: Address;
 
   @CreateDateColumn({ name: 'created_at' })
