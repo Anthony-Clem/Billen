@@ -129,6 +129,7 @@ billen/
 - This ensures `password` and other excluded fields are never exposed in any response
 - `ApiResponse<T>` is the shared response wrapper — lives in `src/common/types/api-response.ts`
 - All modules (auth, clients, invoices, analytics) must import `ApiResponse` from `src/common/`
+- Nested objects (e.g. address) must use a dedicated DTO with `@Expose()` on each field — plain interfaces will not serialize correctly with `plainToInstance`
 
 ### Client Onboarding Flow
 
