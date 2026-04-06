@@ -116,6 +116,7 @@ billen/
 - Prod requires `DATABASE_URL` (Neon PostgreSQL) — document in `.env.example`
 - Prod requires `RESEND_API_KEY` — document in `.env.example`
 - Prod requires `FRONTEND_URL` — used to build onboarding links, document in `.env.example`
+- Prod requires `TIGRIS_ACCESS_KEY_ID`, `TIGRIS_SECRET_ACCESS_KEY`, `TIGRIS_BUCKET_NAME`, `TIGRIS_ENDPOINT_URL` — document in `.env.example`
 
 ### Guards
 
@@ -131,7 +132,26 @@ billen/
 - All modules (auth, clients, invoices, analytics) must import `ApiResponse` from `src/common/`
 - Nested objects (e.g. address) must use a dedicated DTO with `@Expose()` on each field — plain interfaces will not serialize correctly with `plainToInstance`
 
-### Client Onboarding Flow
+### Invoice Flow
+
+- Invoice statuses: `draft`, `sent`, `overdue`
+- `draft` — created but not yet sent; CRON jobs ignore draft invoices entirely
+- `sent` — manually triggered by the user; activates CRON reminder logic
+- `overdue` — set automatically by CRON when `due_date` has passed and status is still `sent`
+- Line items stored as JSON array: `[{ description, quantity, unitPrice }]` — multiple line items supported
+- PDF generated via jsPDF on send, stored in Tigris S3, `pdf_url` saved on the invoice record
+- CRON job runs daily and checks `sent` invoices:
+  - 3 days before `due_date` → send reminder email
+  - On `due_date` → send final reminder email
+  - After `due_date` → flip status to `overdue`, send overdue notice email
+- Sending an invoice (draft → sent): generate PDF → upload to Tigris → send email with PDF link → update status
+
+### Tigris S3
+
+- All PDF uploads go through a dedicated `StorageService` in `src/common/`
+- Use S3-compatible client (e.g. `@aws-sdk/client-s3`) pointed at Tigris endpoint
+- PDF key format: `invoices/<userId>/<invoiceId>.pdf`
+- `pdf_url` stored on the invoice record after successful upload
 
 - User inputs client email in a dashboard dialog → backend generates a tokenized invite
 - Token stored in Redis with 48 hour TTL — auto-deletes on expiry, no cron job needed
