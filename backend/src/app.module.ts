@@ -7,6 +7,7 @@ import { EmailModule } from '@/common/email/email.module';
 import { UserModule } from './modules/user/user.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { ClientModule } from './modules/clients/client.module';
+import { InvoiceModule } from './modules/invoice/invoice.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { ClientModule } from './modules/clients/client.module';
     UserModule,
     AuthModule,
     ClientModule,
+    InvoiceModule,
   ],
   controllers: [],
   providers: [],
