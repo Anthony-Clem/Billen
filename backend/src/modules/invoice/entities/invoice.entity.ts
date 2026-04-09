@@ -1,4 +1,19 @@
-import { Column, Entity, Index, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  Index,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
+import { InvoiceStatus } from '../enums/invoice-status.enum';
+
+export interface LineItem {
+  description: string;
+  quantity: number;
+  unitPrice: number;
+  total: number;
+}
 
 @Entity({ name: 'invoices' })
 export class Invoice {
@@ -16,8 +31,8 @@ export class Invoice {
   @Column({ name: 'invoice_number' })
   invoiceNumber!: string;
 
-  @Column({ name: 'status' })
-  status!: string;
+  @Column({ name: 'status', type: 'varchar', default: InvoiceStatus.DRAFT })
+  status!: InvoiceStatus;
 
   @Column({ name: 'amount', type: 'decimal' })
   amount!: number;
@@ -32,17 +47,17 @@ export class Invoice {
   dueDate!: Date;
 
   @Column({ name: 'line_items', type: 'json' })
-  lineItems!: Record<string, unknown>[];
+  lineItems!: LineItem[];
 
-  @Column({ name: 'pdf_url', nullable: true })
+  @Column({ name: 'pdf_url', nullable: true, type: 'text' })
   pdfUrl!: string | null;
 
-  @Column({ name: 'notes', nullable: true })
+  @Column({ name: 'notes', nullable: true, type: 'text' })
   notes!: string | null;
 
-  @Column({ name: 'created_at', type: 'datetime' })
+  @CreateDateColumn({ name: 'created_at' })
   createdAt!: Date;
 
-  @Column({ name: 'updated_at', type: 'datetime' })
+  @UpdateDateColumn({ name: 'updated_at' })
   updatedAt!: Date;
 }

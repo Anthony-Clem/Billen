@@ -1,4 +1,5 @@
 import { Expose, Type } from 'class-transformer';
+import { InvoiceStatus } from '../enums/invoice-status.enum';
 
 export class LineItemDto {
   @Expose()
@@ -28,7 +29,7 @@ export class InvoiceDto {
   invoiceNumber!: string;
 
   @Expose()
-  status!: string;
+  status!: InvoiceStatus;
 
   @Expose()
   amount!: number;
