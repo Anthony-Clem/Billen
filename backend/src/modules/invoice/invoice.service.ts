@@ -4,6 +4,7 @@ import { Invoice } from './entities/invoice.entity';
 import { Repository } from 'typeorm';
 import { CreateInvoiceDto } from './dtos/create-invoice.dto';
 import { UpdateInvoiceDto } from './dtos/update-invoice.dto';
+import { InvoiceStatus } from './enums/invoice-status.enum';
 
 @Injectable()
 export class InvoiceService {
@@ -43,6 +44,7 @@ export class InvoiceService {
     const invoice = this.repository.create({
       userId,
       ...dto,
+      status: InvoiceStatus.DRAFT,
       lineItems: dto.lineItems.map((item) => ({
         description: item.description,
         unitPrice: item.unitPrice,
@@ -84,5 +86,22 @@ export class InvoiceService {
   async remove(id: string, userId: string) {
     const invoice = await this.findOne(userId, id);
     await this.repository.remove(invoice);
+  }
+
+  async markSent(id: string, userId: string): Promise<Invoice> {
+    const invoice = await this.findOne(userId, id);
+    invoice.status = InvoiceStatus.SENT;
+    return this.repository.save(invoice);
+  }
+
+  findSentInvoices(): Promise<Invoice[]> {
+    return this.repository.find({
+      where: { status: InvoiceStatus.SENT },
+    });
+  }
+
+  async markOverdue(invoice: Invoice): Promise<void> {
+    invoice.status = InvoiceStatus.OVERDUE;
+    await this.repository.save(invoice);
   }
 }

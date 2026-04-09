@@ -3,9 +3,11 @@ import {
   IsArray,
   IsDateString,
   IsDecimal,
+  IsEnum,
   IsOptional,
   IsString,
 } from 'class-validator';
+import { InvoiceStatus } from '../enums/invoice-status.enum';
 import { LineItemDto } from './line-item.dto';
 
 export class UpdateInvoiceDto {
@@ -13,9 +15,9 @@ export class UpdateInvoiceDto {
   @IsOptional()
   invoiceNumber?: string;
 
-  @IsString()
+  @IsEnum(InvoiceStatus)
   @IsOptional()
-  status?: string;
+  status?: InvoiceStatus;
 
   @IsDecimal()
   @IsOptional()

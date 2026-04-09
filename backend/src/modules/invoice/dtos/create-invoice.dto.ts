@@ -19,10 +19,6 @@ export class CreateInvoiceDto {
   @IsNotEmpty()
   invoiceNumber!: string;
 
-  @IsString()
-  @IsNotEmpty()
-  status!: string;
-
   @IsDecimal()
   amount!: number;
 
@@ -39,10 +35,6 @@ export class CreateInvoiceDto {
   @IsArray()
   @Type(() => LineItemDto)
   lineItems!: LineItemDto[];
-
-  @IsString()
-  @IsOptional()
-  pdfUrl?: string;
 
   @IsString()
   @IsOptional()
