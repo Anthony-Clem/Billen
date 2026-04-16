@@ -49,10 +49,17 @@ export class Invoice {
   @Column({ name: 'line_items', type: 'json' })
   lineItems!: LineItem[];
 
+<<<<<<< HEAD
   @Column({ name: 'pdf_url', nullable: true, type: 'text' })
   pdfUrl!: string | null;
 
   @Column({ name: 'notes', nullable: true, type: 'text' })
+=======
+  @Column({ name: 'pdf_url', type: 'text', nullable: true })
+  pdfUrl!: string | null;
+
+  @Column({ name: 'notes', type: 'text', nullable: true })
+>>>>>>> 0731a02 (fix(invoices): resolve module wiring and SQLite column type errors)
   notes!: string | null;
 
   @CreateDateColumn({ name: 'created_at' })
