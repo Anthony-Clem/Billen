@@ -6,6 +6,9 @@ import RegisterPage from './pages/RegisterPage';
 import ClientsPage from './pages/ClientsPage';
 import ClientDetailPage from './pages/ClientDetailPage';
 import OnboardPage from './pages/OnboardPage';
+import InvoicesPage from './pages/InvoicesPage';
+import CreateInvoicePage from './pages/CreateInvoicePage';
+import InvoiceDetailPage from './pages/InvoiceDetailPage';
 
 function ProtectedRoute({ children }: { children: ReactNode }) {
   const { user, loading } = useAuth();
@@ -34,6 +37,30 @@ export default function App() {
           element={
             <ProtectedRoute>
               <ClientDetailPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/invoices"
+          element={
+            <ProtectedRoute>
+              <InvoicesPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/invoices/create"
+          element={
+            <ProtectedRoute>
+              <CreateInvoicePage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/invoices/:id"
+          element={
+            <ProtectedRoute>
+              <InvoiceDetailPage />
             </ProtectedRoute>
           }
         />
