@@ -30,6 +30,14 @@ export default function AppLayout({ children }: { children: ReactNode }) {
           >
             Clients
           </NavLink>
+          <NavLink
+            to="/invoices"
+            className={({ isActive }) =>
+              `${styles.navLink} ${isActive ? styles.navLinkActive : ''}`
+            }
+          >
+            Invoices
+          </NavLink>
         </nav>
 
         <div className={styles.bottom}>
