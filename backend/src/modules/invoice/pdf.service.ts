@@ -5,7 +5,7 @@ import { Invoice } from './entities/invoice.entity';
 @Injectable()
 export class PdfService {
   generate(invoice: Invoice, clientName: string): string {
-    const doc = new jsPDF();
+    const doc: InstanceType<typeof jsPDF> = new jsPDF();
     const margin = 20;
     let y = margin;
 
