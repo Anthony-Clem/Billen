@@ -86,9 +86,12 @@ export function createInvoice(data: CreateInvoiceInput): Promise<Invoice> {
     method: 'POST',
     body: JSON.stringify({
       ...data,
+      amount: parseFloat(String(data.amount)),
       lineItems: data.lineItems.map((item) => ({
         ...item,
-        total: item.quantity * item.unitPrice,
+        quantity: Number(item.quantity),
+        unitPrice: parseFloat(String(item.unitPrice)),
+        total: Number(item.quantity) * parseFloat(String(item.unitPrice)),
       })),
     }),
   });
