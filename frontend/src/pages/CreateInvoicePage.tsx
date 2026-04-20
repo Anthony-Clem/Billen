@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { z } from 'zod';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { createInvoice } from '../services/invoice.service';
 import { getClients, type Client } from '../services/client.service';
 import { invoiceDetailsSchema, lineItemSchema } from '../schemas/invoice.schemas';
@@ -26,11 +26,13 @@ const EMPTY_ITEM: LineItemRow = { description: '', quantity: '1', unitPrice: '0'
 
 export default function CreateInvoicePage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const prefilledClientId = searchParams.get('clientId') ?? '';
   const [step, setStep] = useState(1);
   const [clients, setClients] = useState<Client[]>([]);
 
   const [details, setDetails] = useState<Details>({
-    clientId: '',
+    clientId: prefilledClientId,
     invoiceNumber: '',
     issueDate: new Date().toISOString().split('T')[0] ?? '',
     dueDate: '',
@@ -204,6 +206,7 @@ export default function CreateInvoicePage() {
                   className={styles.select}
                   value={details.clientId}
                   onChange={(e) => setDetail('clientId', e.target.value)}
+                  disabled={!!prefilledClientId}
                 >
                   <option value="">Select a client…</option>
                   {clients.map((c) => (

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { getClient, deleteClient, type Client } from '../services/client.service';
+import { getInvoicesByClient, type Invoice, type InvoiceStatus } from '../services/invoice.service';
 import AppLayout from '../components/AppLayout';
 import styles from './clients.module.css';
 
@@ -15,6 +16,7 @@ export default function ClientDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [client, setClient] = useState<Client | null>(null);
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
@@ -27,6 +29,9 @@ export default function ClientDetailPage() {
       .catch((err: unknown) => {
         setLoadError(err instanceof Error ? err.message : 'Failed to load client');
       });
+    getInvoicesByClient(id)
+      .then(setInvoices)
+      .catch(() => null);
   }, [id]);
 
   async function handleDelete() {
@@ -58,6 +63,12 @@ export default function ClientDetailPage() {
         <div className={styles.emptyState}>Loading…</div>
       </AppLayout>
     );
+  }
+
+  function statusStyle(status: InvoiceStatus): React.CSSProperties {
+    if (status === 'sent') return { color: '#818cf8' };
+    if (status === 'overdue') return { color: '#f87171' };
+    return { color: '#9ca3af' };
   }
 
   return (
@@ -96,6 +107,60 @@ export default function ClientDetailPage() {
             <span>{formatAddress(client)}</span>
           </div>
         </div>
+      </div>
+
+      {/* Invoices section */}
+      <div style={{ maxWidth: 620, marginTop: 32 }}>
+        <div className={styles.detailHeader} style={{ marginBottom: 14 }}>
+          <h2 style={{ fontSize: 16, fontWeight: 600, color: '#e2e8f0', margin: 0 }}>
+            Invoices
+          </h2>
+          <Link
+            to={`/invoices/create?clientId=${id ?? ''}`}
+            className={styles.btnPrimary}
+            style={{ fontSize: 13, padding: '6px 14px' }}
+          >
+            Create invoice
+          </Link>
+        </div>
+        <table className={styles.table}>
+          <thead>
+            <tr>
+              <th>Invoice #</th>
+              <th>Status</th>
+              <th>Due date</th>
+              <th>Amount</th>
+            </tr>
+          </thead>
+          <tbody>
+            {invoices.length === 0 ? (
+              <tr>
+                <td colSpan={4}>
+                  <div className={styles.emptyState} style={{ padding: '24px' }}>
+                    No invoices yet.
+                  </div>
+                </td>
+              </tr>
+            ) : (
+              invoices.map((inv) => (
+                <tr key={inv.id}>
+                  <td className={styles.clientName}>
+                    <Link to={`/invoices/${inv.id}`} className={styles.btnLink}>
+                      {inv.invoiceNumber}
+                    </Link>
+                  </td>
+                  <td>
+                    <span style={statusStyle(inv.status)}>{inv.status}</span>
+                  </td>
+                  <td>{new Date(inv.dueDate).toLocaleDateString()}</td>
+                  <td>
+                    {inv.currency} {inv.amount.toFixed(2)}
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
       </div>
 
       {/* Delete confirmation */}
